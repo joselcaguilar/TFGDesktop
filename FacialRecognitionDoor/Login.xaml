@@ -1,0 +1,40 @@
+﻿<Page
+    x:Class="FacialRecognitionDoor.Login"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FacialRecognitionDoor"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" RequestedTheme="Dark">
+
+    <Grid x:Name="LayoutRoot" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Title Panel -->
+        <StackPanel Grid.Row="0" Margin="20,20,0,0">
+            <TextBlock Text="IronDoor" Margin="0,0,0,0" Style="{ThemeResource HeaderTextBlockStyle}" />
+        </StackPanel>
+
+        <!--Search Box-->
+        <Grid Grid.Row="2" x:Name="SearchRoot" Margin="20,20,20,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80" />
+                <RowDefinition Height="40" />
+                <RowDefinition Height="20" />
+            </Grid.RowDefinitions>
+
+            <Button Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="btnSearch" Click="btnSearch_Click" Width="100">Login</Button>
+            <TextBlock Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="ForgetPassword" Text=""></TextBlock>
+            <TextBlock Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Si ha olvidado su contraseña, póngase en contacto con el equipo de IT de IronDoor"></TextBlock>
+        </Grid>
+        <TextBlock Grid.Column="0" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Para iniciar sesión, pulse el botón de Login y siga las instrucciones que se le ha enviado vía Slack en el equipo de IronDoorTeam"></TextBlock>
+    </Grid>
+</Page>
