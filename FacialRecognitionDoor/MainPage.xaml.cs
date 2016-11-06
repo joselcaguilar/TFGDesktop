@@ -323,7 +323,7 @@ namespace FacialRecognitionDoor
         private async void UnlockDoor(string visitorName)
         {
             // Greet visitor
-            await speech.Read(SpeechContants.GeneralGreetigMessage(visitorName));
+            await speech.Read(SpeechContants.GeneralGreetingMessage(visitorName));
             
             if(gpioAvailable)
             {

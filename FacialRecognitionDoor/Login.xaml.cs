@@ -33,7 +33,12 @@ namespace FacialRecognitionDoor
         public const string resource = "00000002-0000-0000-c000-000000000000";
         public const string clientId = "731c53ea-3042-4f8d-8da3-a8fcad30fa85";
         public bool ok = false;
-        
+        private DispatcherTimer timer;
+        public int elapsedTime;
+
+        // Speech Related Variables:
+        private SpeechHelper speech;
+
         public void PrintCache()
         {
             PrintCache printed = new PrintCache();
@@ -49,10 +54,17 @@ namespace FacialRecognitionDoor
             }
         }
 
-        private void btnSearch_Click(object sender, RoutedEventArgs e)
+        private async void btnSearch_Click(object sender, RoutedEventArgs e)
         {
+            elapsedTime = 0;
+            timer = new DispatcherTimer();
+            timer.Start();
+            timer.Interval = new TimeSpan(0, 0, 1); //Cuenta cada segundo
+            timer.Tick += timer_Tick;
+
             ClearCache();
-            Search("admin", "irondoor.onmicrosoft.com");
+            await Search("admin", "irondoor.onmicrosoft.com");
+            
             PrintCache();
             if (ok)
             {
@@ -64,14 +76,48 @@ namespace FacialRecognitionDoor
                 ForgetPassword.Text = "El usuario no se encuentra en Azure Active Directory";
             }
         }
+
+        private async void timer_Tick(object sender, object e)
+        {
+            elapsedTime++;
+            
+            if (elapsedTime == 10)
+            {
+                Debug.WriteLine("Te quedan 10 seg");
+                await speech.Read(SpeechContants.CountDownLogin);
+            }
+            else if (elapsedTime == 20)
+            {
+                Debug.WriteLine("CountdownFinalizado");
+                //Add Red GPIO Notification
+                timer.Stop();
+                elapsedTime = 0;
+                Frame.Navigate(typeof(Login)); // Reload Login Page
+            }
+        }
+
+        private void speechMediaElement_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (speech == null)
+            {
+                speech = new SpeechHelper(speechMediaElement);
+            }
+            else
+            {
+                // Prevents media element from creating again the SpeechHelper when user signed off
+                speechMediaElement.AutoPlay = false;
+            }
+        }
+
         public Login()
         {
             this.InitializeComponent();
         }
 
-        private void Search(string searchterm, string tenant)
+        static async Task Search(string searchterm, string tenant) //private
         {
-            AuthenticationResult ar = GetToken(tenant);
+            
+            AuthenticationResult ar = await GetToken(tenant);
             if (ar != null)
             {
                 JObject jResult = null;
@@ -85,9 +131,9 @@ namespace FacialRecognitionDoor
                     HttpClient client = new HttpClient();
                     HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, graphRequest);
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", ar.AccessToken);
-                    HttpResponseMessage response = client.SendAsync(request).Result;
+                    HttpResponseMessage response = await client.SendAsync(request);
 
-                    string content = response.Content.ReadAsStringAsync().Result;
+                    string content = await response.Content.ReadAsStringAsync();
                     jResult = JObject.Parse(content);
                 }
                 catch (Exception ee)
@@ -132,7 +178,7 @@ namespace FacialRecognitionDoor
             Debug.WriteLine("Token cache cleared.");
         }
 
-        public void TestPostMessage(string message)
+        static void TestPostMessage(string message)
         {
             string urlWithAccessToken = GeneralConstants.SlackURI;
         
@@ -143,7 +189,7 @@ namespace FacialRecognitionDoor
                        channel: "@admin");
         }
 
-        private AuthenticationResult GetToken(string tenant) //static
+        static async Task<AuthenticationResult> GetToken(string tenant) //static - private
         {
             AuthenticationContext ctx = null;
             if (tenant != null)
@@ -160,36 +206,36 @@ namespace FacialRecognitionDoor
             AuthenticationResult result = null;
             try
             {
-                result = ctx.AcquireTokenSilentAsync(resource, clientId).Result;
+                result = await ctx.AcquireTokenSilentAsync(resource, clientId);
             }
+            
             catch (Exception exc)
             {
-                var adalEx = exc.InnerException as AdalException;
-                if ((adalEx != null) && (adalEx.ErrorCode == "failed_to_acquire_token_silently"))
+                //var adalEx = exc.InnerException as AdalException;
+                //if ((adalEx != null) && (adalEx.ErrorCode == "failed_to_acquire_token_silently"))
+                if (exc is AdalException || exc.InnerException is AdalException)
                 {
-                    result = GetTokenViaCode(ctx);
+                    result = await GetTokenViaCode(ctx);
                 }
                 else
                 {
-          
                     Debug.WriteLine("Something went wrong.");
                     Debug.WriteLine("Message: " + exc.InnerException.Message + "\n");
                 }
             }
             return result;
-
         }
         
-        private AuthenticationResult GetTokenViaCode(AuthenticationContext ctx) //static
+        static async Task<AuthenticationResult> GetTokenViaCode(AuthenticationContext ctx) //static - private
         {
             AuthenticationResult result = null;
             try
             {
-                DeviceCodeResult codeResult = ctx.AcquireDeviceCodeAsync(resource, clientId).Result;
+                DeviceCodeResult codeResult = await ctx.AcquireDeviceCodeAsync(resource, clientId);
                 TestPostMessage(codeResult.Message);
                 //Debug.WriteLine("You need to sign in.");
                 //Debug.WriteLine("Message: " + codeResult.Message + "\n");
-                result = ctx.AcquireTokenByDeviceCodeAsync(codeResult).Result;
+                result = await ctx.AcquireTokenByDeviceCodeAsync(codeResult);
             }
             catch (Exception exc)
             {

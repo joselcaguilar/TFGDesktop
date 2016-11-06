@@ -30,10 +30,12 @@
         public const string VisitorNotRecognizedMessage = "Disculpa, no te reconozco, por lo que no podré abrir la puerta.";
         public const string NoCameraMessage = "Disculpa, parece que la cámara no está completamente inicializada.";
 
-        public static string GeneralGreetigMessage(string visitorName)
+        public static string GeneralGreetingMessage(string visitorName)
         {
             return "¡Bienvenido a la sala del tribunal " + visitorName + "! Mucha suerte.";
         }
+
+        public const string CountDownLogin = "Quedan 10 segundos para iniciar sesión.";
     }
 
     /// <summary>

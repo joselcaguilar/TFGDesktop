@@ -31,6 +31,7 @@
                 <RowDefinition Height="20" />
             </Grid.RowDefinitions>
 
+            <MediaElement x:Name="speechMediaElement" HorizontalAlignment="Left" VerticalAlignment="Top" Loaded="speechMediaElement_Loaded"/>
             <Button Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="btnSearch" Click="btnSearch_Click" Width="100">Login</Button>
             <TextBlock Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="ForgetPassword" Text=""></TextBlock>
             <TextBlock Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Si ha olvidado su contraseña, póngase en contacto con el equipo de IT de IronDoor"></TextBlock>
