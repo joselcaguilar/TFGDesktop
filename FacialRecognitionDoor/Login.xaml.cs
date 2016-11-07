@@ -25,6 +25,7 @@ using Windows.UI.Xaml.Navigation;
 using System.Diagnostics;
 using FacialRecognitionDoor.Helpers;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace FacialRecognitionDoor
 {
@@ -59,40 +60,47 @@ namespace FacialRecognitionDoor
             elapsedTime = 0;
             timer = new DispatcherTimer();
             timer.Start();
-            timer.Interval = new TimeSpan(0, 0, 1); //Cuenta cada segundo
+            timer.Interval = new TimeSpan(0, 0, 1); //Count by second
             timer.Tick += timer_Tick;
 
             ClearCache();
             await Search("admin", "irondoor.onmicrosoft.com");
-            
+
             PrintCache();
-            if (ok)
+            
+            Debug.WriteLine("Es ok inicio de sesion: "+ok);
+            if (ok && elapsedTime < 30)
             {
+                timer.Stop();
                 Frame.Navigate(typeof(MainPage));
             }
             else
             {
-                //User not found
-                ForgetPassword.Text = "El usuario no se encuentra en Azure Active Directory";
+                if (elapsedTime == 30)
+                {
+                    // Time excedeed
+                    ForgetPassword.Text = "Ha sobrepasado los 30 segundos de inicio de sesión, inténtelo de nuevo";
+                }
+                else
+                {
+                    // User not found
+                    ForgetPassword.Text = "El usuario no se encuentra en Azure Active Directory";
+                }
             }
         }
 
         private async void timer_Tick(object sender, object e)
         {
             elapsedTime++;
-            
-            if (elapsedTime == 10)
+            Debug.WriteLine("ElapsedTime: " + elapsedTime);
+            if (elapsedTime == 15)
             {
-                Debug.WriteLine("Te quedan 10 seg");
                 await speech.Read(SpeechContants.CountDownLogin);
             }
-            else if (elapsedTime == 20)
+            else if (elapsedTime == 30)
             {
-                Debug.WriteLine("CountdownFinalizado");
                 //Add Red GPIO Notification
                 timer.Stop();
-                elapsedTime = 0;
-                Frame.Navigate(typeof(Login)); // Reload Login Page
             }
         }
 
@@ -116,7 +124,6 @@ namespace FacialRecognitionDoor
 
         static async Task Search(string searchterm, string tenant) //private
         {
-            
             AuthenticationResult ar = await GetToken(tenant);
             if (ar != null)
             {

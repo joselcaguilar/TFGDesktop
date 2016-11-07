@@ -14,6 +14,7 @@ using FacialRecognitionDoor.Helpers;
 using FacialRecognitionDoor.Objects;
 using Microsoft.ProjectOxford.Face;
 using FacialRecognitionDoor.Facial_Recognition;
+using System.Linq;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -182,7 +183,12 @@ namespace FacialRecognitionDoor
             {
                 // Prevents media element from creating again the SpeechHelper when user signed off
                 speechMediaElement.AutoPlay = false;
-                await speech.Read(SpeechContants.InitialGreetingMessage);
+
+                // We speech the Initial GreetingMessage only if the last page was Login
+                if (Frame.BackStack.Last().GetType() == typeof(Login))
+                {
+                    await speech.Read(SpeechContants.InitialGreetingMessage);
+                }
             }
         }
 
